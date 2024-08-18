@@ -1,0 +1,25 @@
+body
+{
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+table
+{
+  width: 50%;
+  aspect-ratio: 1/1;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+td
+{
+  border: 1px black solid;
+}
+button
+{
+  background-color: white;
+  width: 100%;
+  border: none;
+  aspect-ratio: 1/1;
+}
