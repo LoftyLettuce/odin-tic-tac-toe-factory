@@ -2,15 +2,18 @@ function Position(x, y){
   this.x = x;
   this.y = y;
 }
+let input = new Position(0, 0);
+
 function Player(name, token){
   let position = new Position(0, 0);
   let getPosition = function(){
     return (new Position(position.x, position.y));
   }
-  let manualPlay = function(board){
-    position.x = prompt("row?");
-    position.y = prompt("collumn?");
-    board[position.x][position.y] = token;
+  
+  let manualPlay = function(board, pos){
+    position.x = pos.x;
+    position.y = pos.y;
+    board[pos.x][pos.y]  = token;
   }
   let autoPlay = function(board){
     let totalEmptyCells = 0;
@@ -22,7 +25,8 @@ function Player(name, token){
         totalEmptyCells += row.length;
       }
     }
-    let move = Math.round(Math.random()*totalEmptyCells);
+    let move = Math.ceil(Math.random()*totalEmptyCells);
+    console.log(`move: ${move}`);
     for (let i = 0; i < board.length; i++)
     {
       for (let u = 0; u < board.length; u++)
@@ -34,27 +38,28 @@ function Player(name, token){
           {
             board[i][u] = token;
             position.x = i; position.y = u;
-            console.log(i, u);
           }
         }
       }
     }
   }
-  let play = function(board){
-    if (name !== "com")
+  let play = function(board, pos){
+    console.log(`its ${name} turn!!`)
+    if (name === "com")
     {
-      manualPlay(board);
+      autoPlay(board);
     }
     else
     {
-      autoPlay(board);
+      manualPlay(board, pos);
     }
   }
   return {name, token, play, getPosition};
 }
 
-let Game = (function(){
+let Game = (function(doc){
   let board = [];
+  let rows = null;
   function draw(){
     let size = 3;
     for (let row = 0; row < size; row++)
@@ -92,31 +97,58 @@ let Game = (function(){
         && ratio === Math.abs((pos.x+i)%range-(pos.y+i)%range); ///keep the check stay in its line
       backslash.status = backslash.status 
         && (board[(pos.x+i)%range][(pos.y+range-i)%range] === board[pos.x][pos.y]) //+range so they always stay at positive numbers
-        && ratio === Math.abs((pos.x+i)%range-(pos.y+range-i)%range);
+        && range-1 === Math.abs((pos.x+i)%range+(pos.y+range-i)%range);
     };
-    return collumn.status || row.status || slash.status || backslash.status;
+    if( collumn.status || row.status || slash.status || backslash.status)
+    {
+      console.log("Win!!!");
+    };
   }
   function disPlay(){
     console.table(board);
+    rows = doc.querySelector("tbody").children;
+    for (let i = 0; i < board.length; i++)
+    {
+      for(let u = 0; u < board.length; u++)
+      {
+        rows[i].children[u].querySelector("button").textContent = board[i][u];
+      }
+    }
   }
   function play(){
     let player1  = Player("player1", "x");
     let player2 = Player("com", "o");
-    let turn = null;
+    let turn = player1;
     draw();
-    do
+    disPlay();
+    for (let i = 0, s = 0; i < rows.length; i++)
     {
-      turn = (turn === player1)?player2:player1;
-      if (isFull())
+      for (let u = 0; u < rows.length; u++)
       {
-        console.log(`It's a tie!!!`);
-        return;
+        s++;
+        let index = s-1; /// calculate the position of the element
+        let cell = rows[i].children[u].querySelector("button");
+        cell.addEventListener("click", function(){
+          if (cell.textContent === " ")
+          {
+            turn.play(board, new Position(Math.floor(index/3), index%3));
+            winCheck(turn.getPosition());
+            turn = (player1 === turn)?player2 : player1;
+            if (turn.name === "com")
+            {
+              turn.play(board, null);
+              console.log(turn.getPosition());
+              winCheck(turn.getPosition());
+              turn = (player1 === turn)?player2 : player1;
+            }
+            disPlay();
+          }
+        })
       }
-      turn.play(board);
-      disPlay();
     }
-    while (!winCheck(turn.getPosition()));
-    console.log(`${turn.name} win!!!`);
   }
   return {play, board};
-})();
+})(document);
+window.addEventListener("load", function(){
+  Game.play();
+})
