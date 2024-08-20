@@ -60,7 +60,9 @@ function Player(name, token){
 let Game = (function(doc){
   let board = [];
   let rows = null;
+  let win = false;
   function draw(){
+    win = false;
     let size = 3;
     for (let row = 0; row < size; row++)
     {
@@ -102,6 +104,7 @@ let Game = (function(doc){
     if( collumn.status || row.status || slash.status || backslash.status)
     {
       console.log("Win!!!");
+      return true;
     };
   }
   function disPlay(){
@@ -125,23 +128,26 @@ let Game = (function(doc){
     {
       for (let u = 0; u < rows.length; u++)
       {
-        s++;
-        let index = s-1; /// calculate the position of the element
         let cell = rows[i].children[u].querySelector("button");
+        let cellPos = new Position(i, u);
         cell.addEventListener("click", function(){
           if (cell.textContent === " ")
           {
-            turn.play(board, new Position(Math.floor(index/3), index%3));
-            winCheck(turn.getPosition());
+            turn.play(board, cellPos);
+            win = winCheck(turn.getPosition());
             turn = (player1 === turn)?player2 : player1;
-            if (turn.name === "com")
+            if (turn.name === "com" && !win)
             {
               turn.play(board, null);
               console.log(turn.getPosition());
-              winCheck(turn.getPosition());
+              win = winCheck(turn.getPosition());
               turn = (player1 === turn)?player2 : player1;
             }
             disPlay();
+            if (isFull())
+            {
+              console.log("Tie!!")
+            }
           }
         })
       }
