@@ -61,6 +61,9 @@ let Game = (function(doc){
   let board = [];
   let rows = null;
   let win = false;
+  let resetBoard = [];
+  let player1  = Player("player1", "x");
+  let player2 = Player("com", "o");
   function draw(){
     win = false;
     let size = 3;
@@ -118,9 +121,33 @@ let Game = (function(doc){
       }
     }
   }
+  function changingTurn(cell){
+    if (cell.textContent === " ")
+    {
+      turn.play(board, cellPos);
+      win = winCheck(turn.getPosition());
+      turn = (player1 === turn)?player2 : player1;
+      if (turn.name === "com" && !win)
+      {
+        turn.play(board, null);
+        console.log(turn.getPosition());
+        win = winCheck(turn.getPosition());
+        turn = (player1 === turn)?player2 : player1;
+      }
+      disPlay();
+      if (isFull())
+      {
+        console.log("Tie!!")
+      }
+    }
+  }
+  function reset(){
+    for (let i = 0; i < resetBoard.length; i++)
+    {
+      resetBoard[i]();
+    }
+  }
   function play(){
-    let player1  = Player("player1", "x");
-    let player2 = Player("com", "o");
     let turn = player1;
     draw();
     disPlay();
@@ -130,7 +157,7 @@ let Game = (function(doc){
       {
         let cell = rows[i].children[u].querySelector("button");
         let cellPos = new Position(i, u);
-        cell.addEventListener("click", function(){
+        function testing(){
           if (cell.textContent === " ")
           {
             turn.play(board, cellPos);
@@ -141,20 +168,35 @@ let Game = (function(doc){
               turn.play(board, null);
               console.log(turn.getPosition());
               win = winCheck(turn.getPosition());
+              if (win)
+              {
+                reset();
+              }
               turn = (player1 === turn)?player2 : player1;
             }
             disPlay();
+            if (win)
+            {
+              reset();
+            }
             if (isFull())
             {
-              console.log("Tie!!")
-            }
-          }
+              console.log("Tie!!");
+              reset();
+            } 
+          }  
+        }
+        cell.addEventListener("click", testing)
+        resetBoard.push(function()
+        {
+          cell.removeEventListener("click", testing);
         })
       }
     }
   }
   return {play, board};
 })(document);
+
 window.addEventListener("load", function(){
   Game.play();
 })
