@@ -2,70 +2,9 @@ function Position(x, y){
   this.x = x;
   this.y = y;
 }
-let input = new Position(0, 0);
-
-function Player(name, token){
-  let position = new Position(0, 0);
-  let getPosition = function(){
-    return (new Position(position.x, position.y));
-  }
-  
-  let manualPlay = function(board, pos){
-    position.x = pos.x;
-    position.y = pos.y;
-    board[pos.x][pos.y]  = token;
-  }
-  let autoPlay = function(board){
-    let totalEmptyCells = 0;
-    for (let i = 0; i < board.length; i++)
-    {
-      let row = board[i].filter((cell)=>cell === " ");
-      if (row.length > 0)
-      {
-        totalEmptyCells += row.length;
-      }
-    }
-    let move = Math.ceil(Math.random()*totalEmptyCells);
-    console.log(`move: ${move}`);
-    for (let i = 0; i < board.length; i++)
-    {
-      for (let u = 0; u < board.length; u++)
-      {
-        if (board[i][u] === " ")
-        {
-          move--;
-          if (move === 0)
-          {
-            board[i][u] = token;
-            position.x = i; position.y = u;
-          }
-        }
-      }
-    }
-  }
-  let play = function(board, pos){
-    console.log(`its ${name} turn!!`)
-    if (name === "com")
-    {
-      autoPlay(board);
-    }
-    else
-    {
-      manualPlay(board, pos);
-    }
-  }
-  return {name, token, play, getPosition};
-}
-
-let Game = (function(doc){
+let map = function(){
   let board = [];
-  let rows = null;
-  let win = false;
-  let resetBoard = [];
-  let player1  = Player("player1", "x");
-  let player2 = Player("com", "o");
   function draw(){
-    win = false;
     let size = 3;
     for (let row = 0; row < size; row++)
     {
@@ -83,7 +22,60 @@ let Game = (function(doc){
       )
     })
   }
-  function winCheck(pos){
+  return {board, draw, isFull};
+}();
+
+function Player(name, token){
+  let position = new Position(0, 0);
+  let getPosition = function(){
+    return (new Position(position.x, position.y));
+  }
+  
+  let manualPlay = function(pos){
+    position.x = pos.x;
+    position.y = pos.y;
+    console.log(pos.x);
+    map.board[pos.x][pos.y]  = token;
+  }
+  let autoPlay = function(){
+    let totalEmptyCells = 0;
+    for (let i = 0; i < map.board.length; i++)
+    {
+      let row = map.board[i].filter((cell)=>cell === " ");
+      if (row.length > 0)
+      {
+        totalEmptyCells += row.length;
+      }
+    }
+    let move = Math.ceil(Math.random()*totalEmptyCells);
+    for (let i = 0; i < map.board.length; i++)
+    {
+      for (let u = 0; u < map.board.length; u++)
+      {
+        if (map.board[i][u] === " ")
+        {
+          move--;
+          if (move === 0)
+          {
+            map.board[i][u] = token;
+            position.x = i; position.y = u;
+          }
+        }
+      }
+    }
+  }
+  let play = function(pos){
+    console.log(`its ${name} turn!!`)
+    if (name === "com")
+    {
+      autoPlay(pos);
+    }
+    else
+    {
+      manualPlay(pos);
+    }
+  }
+  function isWin(){
     function Check(name){
       this.name = name;
       this.status = true;
@@ -92,111 +84,100 @@ let Game = (function(doc){
     let row  = new Check("row");
     let slash = new Check("slash");
     let backslash = new Check("backslash");
-    let ratio = Math.abs(pos.x - pos.y);
-    for (let i = 0, range = board.length; i < range; i++)
+    let ratio = Math.abs(position.x - position.y);
+    for (let i = 0, range = map.board.length; i < range; i++)
     {
-      row.status = row.status && (board[pos.x][(pos.y+i)%range] === board[pos.x][pos.y]);
-      collumn.status = collumn.status && (board[(pos.x+i)%range][pos.y] === board[pos.x][pos.y]);
+      row.status = row.status && (map.board[position.x][(position.y+i)%range] === map.board[position.x][position.y]);
+      collumn.status = collumn.status && (map.board[(position.x+i)%range][position.y] === map.board[position.x][position.y]);
       slash.status = slash.status 
-        && (board[(pos.x+i)%range][(pos.y+i)%range] === board[pos.x][pos.y]) 
-        && ratio === Math.abs((pos.x+i)%range-(pos.y+i)%range); ///keep the check stay in its line
+        && (map.board[(position.x+i)%range][(position.y+i)%range] === map.board[position.x][position.y]) 
+        && ratio === Math.abs((position.x+i)%range-(position.y+i)%range); ///keep the check stay in its line
       backslash.status = backslash.status 
-        && (board[(pos.x+i)%range][(pos.y+range-i)%range] === board[pos.x][pos.y]) //+range so they always stay at positive numbers
-        && range-1 === Math.abs((pos.x+i)%range+(pos.y+range-i)%range);
+        && (map.board[(position.x+i)%range][(position.y+range-i)%range] === map.board[position.x][position.y]) //+range so they always stay at positive numbers
+        && range-1 === Math.abs((position.x+i)%range+(position.y+range-i)%range);
     };
     if( collumn.status || row.status || slash.status || backslash.status)
     {
       console.log("Win!!!");
       return true;
     };
+    return false;
   }
-  function disPlay(){
-    console.table(board);
-    rows = doc.querySelector("tbody").children;
-    for (let i = 0; i < board.length; i++)
-    {
-      for(let u = 0; u < board.length; u++)
+  return {name, token, isWin, play, getPosition};
+}
+
+
+
+window.addEventListener("load", function(){
+  let Game = (function(){
+    let rows = document.querySelector("tbody").children;
+    let resetBoard = [];
+    let player1  = Player("player1", "x");
+    let player2 = Player("com", "o");
+    function disPlay(){
+      console.table(map.board);
+      for (let i = 0; i < map.board.length; i++)
       {
-        rows[i].children[u].querySelector("button").textContent = board[i][u];
+        for(let u = 0; u < map.board.length; u++)
+        {
+          rows[i].children[u].querySelector("button").textContent = map.board[i][u];
+        }
       }
     }
-  }
-  function changingTurn(cell){
-    if (cell.textContent === " ")
-    {
-      turn.play(board, cellPos);
-      win = winCheck(turn.getPosition());
-      turn = (player1 === turn)?player2 : player1;
-      if (turn.name === "com" && !win)
+    function reset(){
+      for (let i = 0; i < resetBoard.length; i++)
       {
-        turn.play(board, null);
-        console.log(turn.getPosition());
-        win = winCheck(turn.getPosition());
-        turn = (player1 === turn)?player2 : player1;
+        resetBoard[i]();
       }
+    }
+    function play(){
+      let turn = player1;
+      map.draw();
       disPlay();
-      if (isFull())
+      for (let i = 0; i < rows.length; i++)
       {
-        console.log("Tie!!")
-      }
-    }
-  }
-  function reset(){
-    for (let i = 0; i < resetBoard.length; i++)
-    {
-      resetBoard[i]();
-    }
-  }
-  function play(){
-    let turn = player1;
-    draw();
-    disPlay();
-    for (let i = 0, s = 0; i < rows.length; i++)
-    {
-      for (let u = 0; u < rows.length; u++)
-      {
-        let cell = rows[i].children[u].querySelector("button");
-        let cellPos = new Position(i, u);
-        function testing(){
-          if (cell.textContent === " ")
-          {
-            turn.play(board, cellPos);
-            win = winCheck(turn.getPosition());
-            turn = (player1 === turn)?player2 : player1;
-            if (turn.name === "com" && !win)
+        for (let u = 0; u < rows.length; u++)
+        {
+          let cell = rows[i].children[u].querySelector("button");
+          let cellPos = new Position(i, u);
+          function changingTurn(){
+            if (cell.textContent === " ")
             {
-              turn.play(board, null);
-              console.log(turn.getPosition());
-              win = winCheck(turn.getPosition());
-              if (win)
+              turn.play(cellPos);
+              if (turn.isWin())
               {
                 reset();
               }
-              turn = (player1 === turn)?player2 : player1;
-            }
-            disPlay();
-            if (win)
-            {
-              reset();
-            }
-            if (isFull())
-            {
-              console.log("Tie!!");
-              reset();
-            } 
-          }  
+              else{
+                turn = (player1 === turn)?player2 : player1;
+                if (turn.name === "com")
+                {
+
+                  turn.play(null);
+                  if (turn.isWin())
+                  {
+                    reset();
+                  }
+                  turn = (player1 === turn)?player2 : player1;
+                }
+              }
+              disPlay();
+              if (map.isFull())
+              {
+                console.log("Tie!!");
+                reset();
+              } 
+            }  
+          }
+          cell.addEventListener("click", changingTurn);
+          resetBoard.push(function()
+          {
+            cell.removeEventListener("click", changingTurn);
+          })
         }
-        cell.addEventListener("click", testing)
-        resetBoard.push(function()
-        {
-          cell.removeEventListener("click", testing);
-        })
       }
     }
-  }
-  return {play, board};
-})(document);
-
-window.addEventListener("load", function(){
+    return {play};
+  })();
   Game.play();
 })
