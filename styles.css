@@ -55,6 +55,11 @@ label
 {
   align-self: flex-start;
 }
+input:invalid
+{
+  border: none;
+  outline: 1px red solid;
+}
 button
 {
   background-color: white;
