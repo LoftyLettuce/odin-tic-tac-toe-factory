@@ -60,8 +60,23 @@ input:invalid
   border: none;
   outline: 1px red solid;
 }
-button
+label[for="player2"]
+{
+  position: relative;
+}
+label[for="player2"] span::before
+{
+  display: block;
+  content: "use \"com\" as username to play with computer";
+  font-size: 12px;
+  position: absolute;
+}
+button:last-child
 {
   background-color: white;
   width: 10rem;
+}
+button:last-child:active
+{
+  border: 1px white solid;
 }
