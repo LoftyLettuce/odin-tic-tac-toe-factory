@@ -1,25 +1,62 @@
+/* reset */
+*
+{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 body
 {
   height: 100vh;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+}
+span
+{
+  height: 3rem;
+}
+.match
+{
+  height: 80%;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 table
 {
-  width: 50%;
+  flex: 0 0 40%;
+  width: 40%;
   aspect-ratio: 1/1;
   border-collapse: collapse;
   border-spacing: 0;
+  border: 1px solid black;
 }
 td
 {
   border: 1px black solid;
 }
+tr
+{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+table button
+{
+  appearance: none;
+  background-color: white;
+  width: 100%;
+  aspect-ratio: 1/1;
+  border: none;
+}
+label
+{
+  align-self: flex-start;
+}
 button
 {
   background-color: white;
-  width: 100%;
-  border: none;
-  aspect-ratio: 1/1;
+  width: 10rem;
 }
