@@ -26,77 +26,75 @@ let map = function(){
 }();
 
 function Player(name, token){
-  let position = new Position(0, 0);
-  let getPosition = function(){
-    return (new Position(position.x, position.y));
-  }
-  
-  let manualPlay = function(pos){
-    position.x = pos.x;
-    position.y = pos.y;
-    map.board[pos.x][pos.y]  = token;
-  }
-  let autoPlay = function(){
-    let totalEmptyCells = 0;
-    for (let i = 0; i < map.board.length; i++)
+  this.name = name;
+  this.token = token;
+  this.position = new Position(0, 0);
+}
+Player.prototype.autoPlay = function()
+{
+  let totalEmptyCells = 0;
+  for (let i = 0; i < map.board.length; i++)
+  {
+    let row = map.board[i].filter((cell)=>cell === " ");
+    if (row.length > 0)
     {
-      let row = map.board[i].filter((cell)=>cell === " ");
-      if (row.length > 0)
-      {
-        totalEmptyCells += row.length;
-      }
+      totalEmptyCells += row.length;
     }
-    let move = Math.ceil(Math.random()*totalEmptyCells);
-    for (let i = 0; i < map.board.length; i++)
+  }
+  let move = Math.ceil(Math.random()*totalEmptyCells);
+  for (let i = 0; i < map.board.length; i++)
+  {
+    for (let u = 0; u < map.board.length; u++)
     {
-      for (let u = 0; u < map.board.length; u++)
+      if (map.board[i][u] === " ")
       {
-        if (map.board[i][u] === " ")
+        move--;
+        if (move === 0)
         {
-          move--;
-          if (move === 0)
-          {
-            map.board[i][u] = token;
-            position.x = i; position.y = u;
-          }
+          map.board[i][u] = this.token;
+          this.position.x = i; this.position.y = u;
         }
       }
     }
   }
-  let play = function(pos){
-    if (name === "com")
-    {
-      autoPlay(pos);
-    }
-    else
-    {
-      manualPlay(pos);
-    }
+}
+Player.prototype.manualPlay = function(pos){
+  this.position.x = pos.x;
+  this.position.y = pos.y;
+  map.board[pos.x][pos.y]  = this.token;
+}
+Player.prototype.play = function(pos){
+  if (this.name === "com")
+  {
+    this.autoPlay(pos);
   }
-  function isWin(){
-    function Check(name){
-      this.name = name;
-      this.status = true;
-    }
-    let collumn = new Check("collumn");
-    let row  = new Check("row");
-    let slash = new Check("slash");
-    let backslash = new Check("backslash");
-    let ratio = Math.abs(position.x - position.y);
-    for (let i = 0, range = map.board.length; i < range; i++)
-    {
-      row.status = row.status && (map.board[position.x][(position.y+i)%range] === map.board[position.x][position.y]);
-      collumn.status = collumn.status && (map.board[(position.x+i)%range][position.y] === map.board[position.x][position.y]);
-      slash.status = slash.status 
-        && (map.board[(position.x+i)%range][(position.y+i)%range] === map.board[position.x][position.y]) 
-        && ratio === Math.abs((position.x+i)%range-(position.y+i)%range); ///keep the check stay in its line
-      backslash.status = backslash.status 
-        && (map.board[(position.x+i)%range][(position.y+range-i)%range] === map.board[position.x][position.y]) //+range so they always stay at positive numbers
-        && range-1 === Math.abs((position.x+i)%range+(position.y+range-i)%range);
-    };
-    return(collumn.status || row.status || slash.status || backslash.status);
+  else
+  {
+    this.manualPlay(pos);
   }
-  return {name, token, isWin, play, getPosition};
+}
+Player.prototype.isWin = function(){
+  function Check(name){
+    this.name = name;
+    this.status = true;
+  }
+  let collumn = new Check("collumn");
+  let row  = new Check("row");
+  let slash = new Check("slash");
+  let backslash = new Check("backslash");
+  let ratio = Math.abs(this.position.x - this.position.y);
+  for (let i = 0, range = map.board.length; i < range; i++)
+  {
+    row.status = row.status && (map.board[this.position.x][(this.position.y+i)%range] === map.board[this.position.x][this.position.y]);
+    collumn.status = collumn.status && (map.board[(this.position.x+i)%range][this.position.y] === map.board[this.position.x][this.position.y]);
+    slash.status = slash.status 
+      && (map.board[(this.position.x+i)%range][(this.position.y+i)%range] === map.board[this.position.x][this.position.y]) 
+      && ratio === Math.abs((this.position.x+i)%range-(this.position.y+i)%range); ///keep the check stay in its line
+    backslash.status = backslash.status 
+      && (map.board[(this.position.x+i)%range][(this.position.y+range-i)%range] === map.board[this.position.x][this.position.y]) //+range so they always stay at positive numbers
+      && range-1 === Math.abs((this.position.x+i)%range+(this.position.y+range-i)%range);
+  };
+  return(collumn.status || row.status || slash.status || backslash.status);
 }
 let Game = (function(){
   let rows;
@@ -123,8 +121,8 @@ let Game = (function(){
     }
   }
   function play(){
-    let player1  = Player(document.getElementById("player1").value, "x");
-    let player2 = Player(document.getElementById("player2").value, "o");
+    let player1  = new Player(document.getElementById("player1").value, "x");
+    let player2 = new Player(document.getElementById("player2").value, "o");
     let turn = player1;
     map.draw();
     displayMap();
