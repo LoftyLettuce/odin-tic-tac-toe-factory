@@ -98,89 +98,88 @@ function Player(name, token){
   }
   return {name, token, isWin, play, getPosition};
 }
-  let Game = (function(){
-    let rows;
-    let resetBoard = [];
-    function announceResult(displayText)
+let Game = (function(){
+  let rows;
+  let resetBoard = [];
+  function announceResult(displayText)
+  {
+    let resultBoard = document.getElementById("resultBoard");
+    resultBoard.textContent = displayText;
+  }
+  function displayMap(){
+    rows = document.querySelector("tbody").children;
+    for (let i = 0; i < map.board.length; i++)
     {
-      let resultBoard = document.getElementById("resultBoard");
-      resultBoard.textContent = displayText;
-    }
-    function disPlay(){
-      rows = document.querySelector("tbody").children;
-      for (let i = 0; i < map.board.length; i++)
+      for(let u = 0; u < map.board.length; u++)
       {
-        for(let u = 0; u < map.board.length; u++)
-        {
-          rows[i].children[u].querySelector("button").textContent = map.board[i][u];
-        }
+        rows[i].children[u].querySelector("button").textContent = map.board[i][u];
       }
     }
-    function reset(){
-      for (let i = 0; i < resetBoard.length; i++)
-      {
-        resetBoard[i]();
-      }
+  }
+  function reset(){
+    for (let i = 0; i < resetBoard.length; i++)
+    {
+      resetBoard[i]();
     }
-    function play(){
-      let player1  = Player(document.getElementById("player1").value, "x");
-      let player2 = Player(document.getElementById("player2").value, "o");
-      let turn = player1;
-      map.draw();
-      disPlay();
-      announceResult("");
-      for (let i = 0; i < rows.length; i++)
+  }
+  function play(){
+    let player1  = Player(document.getElementById("player1").value, "x");
+    let player2 = Player(document.getElementById("player2").value, "o");
+    let turn = player1;
+    map.draw();
+    displayMap();
+    announceResult("");
+    for (let i = 0; i < rows.length; i++)
+    {
+      for (let u = 0; u < rows.length; u++)
       {
-        for (let u = 0; u < rows.length; u++)
-        {
-          let cell = rows[i].children[u].querySelector("button");
-          let cellPos = new Position(i, u);
-          function changingTurn(){
-            if (cell.textContent === " ")
-            {
-              turn.play(cellPos);
-              disPlay();
-              if (turn.isWin())
-              {
-                announceResult(`${turn.name} win!!!`);
-                reset();
-                disPlay();
-                return;
-              }
-              else{
-                turn = (player1 === turn)?player2 : player1;
-                if (turn.name === "com")
-                {
-
-                  turn.play(null);
-                  disPlay();
-                  if (turn.isWin())
-                  {
-                    announceResult(`${turn.name} win!!!`);
-                    reset();
-                    return;
-                  }
-                  turn = (player1 === turn)?player2 : player1;
-                }
-              }
-              if (map.isFull())
-              {
-                announceResult("Tie!!");
-                reset();
-                return;
-              } 
-            }  
-          }
-          cell.addEventListener("click", changingTurn);
-          resetBoard.push(function()
+        let cell = rows[i].children[u].querySelector("button");
+        let cellPos = new Position(i, u);
+        function changingTurn(){
+          if (cell.textContent === " ")
           {
-            cell.removeEventListener("click", changingTurn);
-          })
+            turn.play(cellPos);
+            displayMap();
+            if (turn.isWin())
+            {
+              announceResult(`${turn.name} win!!!`);
+              reset();
+              return;
+            }
+            else{
+              turn = (player1 === turn)?player2 : player1;
+              if (turn.name === "com")
+              {
+
+                turn.play(null);
+                displayMap();
+                if (turn.isWin())
+                {
+                  announceResult(`${turn.name} win!!!`);
+                  reset();
+                  return;
+                }
+                turn = (player1 === turn)?player2 : player1;
+              }
+            }
+            if (map.isFull())
+            {
+              announceResult("Tie!!");
+              reset();
+              return;
+            } 
+          }  
         }
+        cell.addEventListener("click", changingTurn);
+        resetBoard.push(function()
+        {
+          cell.removeEventListener("click", changingTurn);
+        })
       }
     }
-    return {play};
-  })();
+  }
+  return {play};
+})();
 window.addEventListener("load", function(){
   let playButton = this.document.getElementById("play-button");
   playButton.addEventListener("click", function(){
