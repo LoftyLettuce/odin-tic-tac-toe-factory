@@ -34,7 +34,6 @@ function Player(name, token){
   let manualPlay = function(pos){
     position.x = pos.x;
     position.y = pos.y;
-    console.log(pos.x);
     map.board[pos.x][pos.y]  = token;
   }
   let autoPlay = function(){
@@ -65,7 +64,6 @@ function Player(name, token){
     }
   }
   let play = function(pos){
-    console.log(`its ${name} turn!!`)
     if (name === "com")
     {
       autoPlay(pos);
@@ -96,31 +94,20 @@ function Player(name, token){
         && (map.board[(position.x+i)%range][(position.y+range-i)%range] === map.board[position.x][position.y]) //+range so they always stay at positive numbers
         && range-1 === Math.abs((position.x+i)%range+(position.y+range-i)%range);
     };
-    if( collumn.status || row.status || slash.status || backslash.status)
-    {
-      console.log("Win!!!");
-      return true;
-    };
-    return false;
+    return(collumn.status || row.status || slash.status || backslash.status);
   }
   return {name, token, isWin, play, getPosition};
 }
-
-
-
-window.addEventListener("load", function(){
   let Game = (function(){
-    let rows = document.querySelector("tbody").children;
+    let rows;
     let resetBoard = [];
-    let player1  = Player("player1", "x");
-    let player2 = Player("com", "o");
     function announceResult(displayText)
     {
       let resultBoard = document.getElementById("resultBoard");
       resultBoard.textContent = displayText;
     }
     function disPlay(){
-      console.table(map.board);
+      rows = document.querySelector("tbody").children;
       for (let i = 0; i < map.board.length; i++)
       {
         for(let u = 0; u < map.board.length; u++)
@@ -136,6 +123,8 @@ window.addEventListener("load", function(){
       }
     }
     function play(){
+      let player1  = Player(document.getElementById("player1").value, "x");
+      let player2 = Player(document.getElementById("player2").value, "o");
       let turn = player1;
       map.draw();
       disPlay();
@@ -150,10 +139,13 @@ window.addEventListener("load", function(){
             if (cell.textContent === " ")
             {
               turn.play(cellPos);
+              disPlay();
               if (turn.isWin())
               {
                 announceResult(`${turn.name} win!!!`);
                 reset();
+                disPlay();
+                return;
               }
               else{
                 turn = (player1 === turn)?player2 : player1;
@@ -161,21 +153,21 @@ window.addEventListener("load", function(){
                 {
 
                   turn.play(null);
+                  disPlay();
                   if (turn.isWin())
                   {
                     announceResult(`${turn.name} win!!!`);
                     reset();
+                    return;
                   }
                   turn = (player1 === turn)?player2 : player1;
                 }
               }
-              disPlay();
-              console.log(`map: ${map.isFull()}`)
               if (map.isFull())
               {
                 announceResult("Tie!!");
-                console.log("Tie!!");
                 reset();
+                return;
               } 
             }  
           }
@@ -189,5 +181,12 @@ window.addEventListener("load", function(){
     }
     return {play};
   })();
-  Game.play();
+window.addEventListener("load", function(){
+  let playButton = this.document.getElementById("play-button");
+  playButton.addEventListener("click", function(){
+    if (document.getElementById("player1").checkValidity() && document.getElementById("player2").checkValidity())
+    {  
+      Game.play();
+    }
+  })
 })
