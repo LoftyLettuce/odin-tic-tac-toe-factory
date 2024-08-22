@@ -16,11 +16,11 @@ let map = function(){
     }
   }
   function isFull(){
-    board.some((row) => {
+    return !(board.some((row) => (
       row.some((cell)=>
         cell === " "
       )
-    })
+    )));
   }
   return {board, draw, isFull};
 }();
@@ -114,6 +114,11 @@ window.addEventListener("load", function(){
     let resetBoard = [];
     let player1  = Player("player1", "x");
     let player2 = Player("com", "o");
+    function announceResult(displayText)
+    {
+      let resultBoard = document.getElementById("resultBoard");
+      resultBoard.textContent = displayText;
+    }
     function disPlay(){
       console.table(map.board);
       for (let i = 0; i < map.board.length; i++)
@@ -134,6 +139,7 @@ window.addEventListener("load", function(){
       let turn = player1;
       map.draw();
       disPlay();
+      announceResult("");
       for (let i = 0; i < rows.length; i++)
       {
         for (let u = 0; u < rows.length; u++)
@@ -146,6 +152,7 @@ window.addEventListener("load", function(){
               turn.play(cellPos);
               if (turn.isWin())
               {
+                announceResult(`${turn.name} win!!!`);
                 reset();
               }
               else{
@@ -156,14 +163,17 @@ window.addEventListener("load", function(){
                   turn.play(null);
                   if (turn.isWin())
                   {
+                    announceResult(`${turn.name} win!!!`);
                     reset();
                   }
                   turn = (player1 === turn)?player2 : player1;
                 }
               }
               disPlay();
+              console.log(`map: ${map.isFull()}`)
               if (map.isFull())
               {
+                announceResult("Tie!!");
                 console.log("Tie!!");
                 reset();
               } 
