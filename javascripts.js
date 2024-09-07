@@ -96,14 +96,14 @@ Player.prototype.isWin = function(){
   };
   return(collumn.status || row.status || slash.status || backslash.status);
 }
+function announceResult(displayText)
+{
+  let resultBoard = document.getElementById("resultBoard");
+  resultBoard.textContent = displayText;
+}
 let Game = (function(){
   let rows;
   let resetBoard = [];
-  function announceResult(displayText)
-  {
-    let resultBoard = document.getElementById("resultBoard");
-    resultBoard.textContent = displayText;
-  }
   function displayMap(){
     rows = document.querySelector("tbody").children;
     for (let i = 0; i < map.board.length; i++)
